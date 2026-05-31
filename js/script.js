@@ -216,6 +216,7 @@ function renderReactionCards() {
         `;
         return;
     }
+    
     dom.reactionCards.innerHTML = state.hand.map((card, i) => {
         const cls = card.isCorrect ? 'correct-card' : 'wrong-card';
         const sel = state.selectedReaction === i ? 'selected' : '';
@@ -229,10 +230,12 @@ function renderReactionCards() {
         `;
     }).join('');
 
-    // Add click handlers
-    dom.reactionCards.querySelectorAll('.reaction-card:not(.disabled)').forEach(card => {
-        card.addEventListener('click', () => {
-            const index = parseInt(card.dataset.index);
+    // ВАЖНОЕ ИСПРАВЛЕНИЕ: Добавляем обработчики событий после обновления DOM
+    const cards = dom.reactionCards.querySelectorAll('.reaction-card:not(.disabled)');
+    cards.forEach(card => {
+        card.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            console.log('Card clicked, index:', index); // Для отладки
             selectReaction(index);
         });
     });
@@ -257,6 +260,7 @@ function updateUI() {
     dom.scoreRound.textContent = `${state.round}/${state.maxRounds}`;
     dom.rerollsLeft.textContent = `Осталось: ${state.rerollsLeft}`;
 
+    // ИСПРАВЛЕНИЕ: Улучшенная логика блокировки кнопок
     if (state.gameOver) {
         dom.btnDraw.disabled = true;
         dom.btnSubmit.disabled = true;
@@ -267,8 +271,14 @@ function updateUI() {
         dom.btnNewHand.disabled = true;
     } else if (state.currentSituation && !state.gameOver) {
         dom.btnDraw.disabled = true;
-        dom.btnSubmit.disabled = !state.selectedReaction;
-        dom.btnNewHand.disabled = state.rerollsLeft <= 0;
+        // ИСПРАВЛЕНИЕ: Кнопка активна только когда выбрана реакция И есть текущая ситуация
+        dom.btnSubmit.disabled = (state.selectedReaction === null);
+        dom.btnNewHand.disabled = (state.rerollsLeft <= 0);
+        
+        // Отладка
+        console.log('UpdateUI - hasSituation:', !!state.currentSituation, 
+                    'selectedReaction:', state.selectedReaction, 
+                    'submitDisabled:', dom.btnSubmit.disabled);
     } else {
         dom.btnDraw.disabled = false;
         dom.btnSubmit.disabled = true;
@@ -332,7 +342,12 @@ function drawSituation() {
 }
 
 function selectReaction(index) {
-    if (state.gameOver) return;
+    console.log('selectReaction called with index:', index); // Отладка
+    
+    if (state.gameOver) {
+        console.log('Game is over, ignoring selection');
+        return;
+    }
     if (state.mode === 'duo' && state.hackerTurn) {
         addLog('⛔ Сейчас ход Хакера, Пользователь не может выбирать реакцию.', 'error');
         return;
@@ -341,13 +356,23 @@ function selectReaction(index) {
         addLog('⚠️ Сначала нужно вытянуть ситуацию!', 'error');
         return;
     }
+    
     state.selectedReaction = index;
-    updateUI();
+    console.log('selectedReaction set to:', state.selectedReaction); // Отладка
+    
     addLog(`🃏 Выбрана реакция: "${state.hand[index].text.substring(0, 40)}..."`, 'info');
+    updateUI();
 }
 
 function submitReaction() {
-    if (state.gameOver || state.selectedReaction === null || !state.currentSituation) return;
+    console.log('submitReaction called'); // Отладка
+    
+    if (state.gameOver || state.selectedReaction === null || !state.currentSituation) {
+        console.log('Cannot submit - gameOver:', state.gameOver, 
+                    'selectedReaction:', state.selectedReaction, 
+                    'currentSituation:', !!state.currentSituation);
+        return;
+    }
     if (state.mode === 'duo' && state.hackerTurn) return;
 
     const reaction = state.hand[state.selectedReaction];
