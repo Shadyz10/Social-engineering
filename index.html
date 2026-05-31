@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Не дай себя взломать: Битва с социальным инженером</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+    <div class="game-container">
+        <div class="header">
+            <h1>🛡️ Не дай себя взломать</h1>
+            <div class="subtitle">Битва с социальным инженером</div>
+        </div>
+
+        <!-- Сложность -->
+        <div class="mode-select" id="modeSelect">
+            <button class="mode-btn active" data-mode="solo">
+                <span class="icon">🎮</span> Одиночная игра
+            </button>
+            <button class="mode-btn" data-mode="duo">
+                <span class="icon">👥</span> Хакер vs Пользователь
+            </button>
+            <button class="mode-btn" data-mode="spectate">
+                <span class="icon">👁️</span> Тренировка
+            </button>
+        </div>
+
+        <!-- Счет -->
+        <div class="scoreboard">
+            <div class="score-item">
+                <div class="score-value positive" id="scoreCorrect">0</div>
+                <div class="score-label">✅ Верных ответов</div>
+            </div>
+            <div class="score-item">
+                <div class="score-value negative" id="scoreWrong">0</div>
+                <div class="score-label">❌ Ошибок</div>
+            </div>
+            <div class="score-item">
+                <div class="score-value" id="scorePosition" style="color: var(--accent);">0</div>
+                <div class="score-label">📍 Позиция</div>
+            </div>
+            <div class="score-item">
+                <div class="score-value" id="scoreRound" style="color: #ffa502;">0/30</div>
+                <div class="score-label">🔄 Раунд</div>
+            </div>
+        </div>
+
+        <!-- Арена игры -->
+        <div class="board-section">
+            <div class="board-title">🎯 Игровая дорожка</div>
+            <div class="game-track" id="gameTrack">
+            </div>
+        </div>
+
+        <!-- Арена игры -->
+        <div class="game-area">
+            <!-- Ситуации -->
+            <div class="panel">
+                <h3>📜 Ситуация</h3>
+                <div class="card" id="situationCard">
+                    <div class="card-text">Нажмите «Начать игру», чтобы получить первую ситуацию</div>
+                    <div class="card-type">Ожидание...</div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button class="btn btn-primary" id="btnDraw">🎴 Тянуть ситуацию</button>
+                </div>
+            </div>
+
+            <!-- Реакции -->
+            <div class="panel">
+                <h3>🃏 Ваши реакции (выберите одну)</h3>
+                <div class="reaction-cards" id="reactionCards">
+                    <div class="reaction-card correct-card disabled">Загрузка...</div>
+                    <div class="reaction-card wrong-card disabled">Загрузка...</div>
+                    <div class="reaction-card correct-card disabled">Загрузка...</div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                    <button class="btn btn-danger" id="btnSubmit" disabled>⚡ Подтвердить реакцию</button>
+                </div>
+                <div style="text-align: center; margin-top: 8px;">
+                    <button class="btn btn-outline btn-sm" id="btnNewHand" disabled>🔄 Сменить карты (3 за игру)</button>
+                    <span class="rerolls-info" id="rerollsLeft">Осталось: 3</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- логи -->
+        <div class="panel">
+            <h3>📋 Журнал событий</h3>
+            <div class="log" id="logContainer">
+                <div class="log-entry info"><span class="log-time">--:--</span>Добро пожаловать в игру! Выберите режим и начните.</div>
+            </div>
+        </div>
+
+        <!-- Управление -->
+        <div class="controls-row">
+            <button class="btn btn-outline" id="btnReset">🔄 Новая игра</button>
+            <button class="btn btn-outline btn-sm" id="btnRules">📖 Правила</button>
+        </div>
+    </div>
+
+    <!-- Победа -->
+    <div class="modal-overlay hidden" id="modalVictory">
+        <div class="modal">
+            <span class="big-icon">🔒</span>
+            <h2 id="modalTitle">Победа!</h2>
+            <p id="modalText">Вы успешно защитились от социального инженера!</p>
+            <p class="modal-stats" id="modalStats"></p>
+            <button class="btn btn-primary" id="btnPlayAgain">🔄 Играть снова</button>
+        </div>
+    </div>
+
+    <!-- Правила -->
+    <div class="modal-overlay hidden" id="modalRules">
+        <div class="modal modal-rules">
+            <h2>📖 Правила игры</h2>
+            <p><strong>Цель:</strong> Дойти до клетки 10 (Финиш), не попавшись на уловки социального инженера.</p>
+            <p><strong>Как играть:</strong></p>
+            <ul>
+                <li>Хакер (или бот) зачитывает ситуацию-ловушку</li>
+                <li>Выберите одну из 3 карт реакций на руке</li>
+                <li>✅ Правильная реакция = +1 шаг вперёд</li>
+                <li>❌ Неправильная реакция = -1 шаг назад</li>
+                <li>🛡️ Клетка 5 даёт бонус +1</li>
+                <li>💧 Клетка 7 — штраф -1</li>
+                <li>🔄 Можно сменить карты 3 раза за игру</li>
+            </ul>
+            <p><strong>Победа:</strong> Достигните клетки 10 за 30 раундов!</p>
+            <button class="btn btn-primary" id="btnCloseRules">Понятно!</button>
+        </div>
+    </div>
+
+    <script src="./js/script.js"></script>
+</body>
+</html>
